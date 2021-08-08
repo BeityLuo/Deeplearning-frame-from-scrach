@@ -3,14 +3,14 @@ from mtorch import layers
 from mtorch.layers import Sequential
 from mtorch.loss_functions import SquareLoss
 from mtorch.modules import Module
-from mtorch.optimizer import SGD
+from mtorch.optimizers import SGD
 from mtorch.utils.dataloader import DataLoader
 from mtorch.utils.dataset import FileDataset
 from macros import *
 
 EPOCH_NUM = 4000  # 共训练EPOCH_NUM次 train for EPOCH_NUM times
-TEST_STEP = 10  # 每训练TEST_STEP轮就测试一次 test for every TEST_STEP times train
-SHOW_CHART_STEP = 10  # 每测试SHOW_CHART_STEP次就输出一次图像 draw a chart for every SHOW_CHART_STEP times test
+TEST_STEP = 50  # 每训练TEST_STEP轮就测试一次 test for every TEST_STEP times train
+SHOW_CHART_STEP = 50  # 每测试SHOW_CHART_STEP次就输出一次图像 draw a chart for every SHOW_CHART_STEP times test
 learning_rate = 0.1  # 学习率
 batch_size = 20
 
@@ -36,8 +36,8 @@ def show_effect(epoch, module, loss_fun, test_loader, step):
     for data in test_loader:
         imgs, targets = data
         outputs = module(imgs)
-        loss = loss_fun(outputs, targets)
-        total_loss += loss.item()
+        loss = loss_fun(outputs, targets, transform=True)
+        total_loss += loss.value
         accuracy = (outputs.argmax(1).reshape(targets.shape) == targets).sum()
         total_accuracy += accuracy
 
@@ -46,6 +46,7 @@ def show_effect(epoch, module, loss_fun, test_loader, step):
     drawer.accuracies[step] = accuracy
     print("test loss = {}".format(total_loss))
     print("test accuracy = {}%".format(accuracy * 100))
+    show_image(test_img)
     if step % SHOW_CHART_STEP == 0:
         drawer.draw()
 
@@ -69,7 +70,7 @@ def show_image(img):
 
 
 # 准备数据集 prepare dataset
-dataset_path = "./dataset"
+dataset_path = "../dataset"
 train_img_path = dataset_path + "/" + TRAIN_IMG
 train_label_path = dataset_path + "/" + TRAIN_LABEL
 train_set = FileDataset(train_img_path, train_label_path)
@@ -88,11 +89,11 @@ print("Finished loader dataset")
 class DigitModule(Module):
     def __init__(self):
         sequential = Sequential([
-            layers.Linear(in_dim=ROW_NUM * COLUM_NUM, out_dim=16),
+            layers.Linear2(in_dim=ROW_NUM * COLUM_NUM, out_dim=16, coe=2),
             layers.Relu(16),
-            layers.Linear(in_dim=16, out_dim=16),
+            layers.Linear2(in_dim=16, out_dim=16, coe=2),
             layers.Relu(16),
-            layers.Linear(in_dim=16, out_dim=CLASS_NUM),
+            layers.Linear2(in_dim=16, out_dim=CLASS_NUM, coe=1),
             layers.Sigmoid(CLASS_NUM)
 
             # layers.Linear(in_dim=ROW_NUM * COLUM_NUM, out_dim=100),
@@ -108,7 +109,6 @@ loss_func = SquareLoss(backward_func=module.backward)  # 定义损失函数 defi
 optimizer = SGD(module, lr=learning_rate)  # 定义优化器 define optimizer
 
 for i in range(EPOCH_NUM):
-    # print("___________{} turn begins___________".format(i))
     trainning_loss = 0
     for data in train_loader:
         """
@@ -119,9 +119,9 @@ for i in range(EPOCH_NUM):
         # test_img = imgs[0].reshape((28, 28))
         # show_image(test_img)
         outputs = module(imgs)
-        loss = loss_func(outputs, targets)  # 计算loss calculate loss
-        trainning_loss += loss
-        loss_func.backward()  # 通过反向传播计算梯度 calculate gradiant through back propagation
+        loss = loss_func(outputs, targets, transform=True)  # 计算loss calculate loss
+        trainning_loss += loss.value
+        loss.backward()  # 通过反向传播计算梯度 calculate gradiant through back propagation
         optimizer.step()  # 通过优化器调整模型参数 adjust the weights of network through optimizer
     if i % TEST_STEP == 0:
         show_effect(i, module, loss_func, test_loader, i // TEST_STEP)

@@ -7,7 +7,7 @@ class Module:
 
     def forward(self, x):
         # 这里要转置两次，因为外界统一用(batch_size, dim), 神经网络内部统一用(dim, batch_size)
-        return self.sequential(x.T).T
+        return self.sequential(x)
 
     def backward(self, output_delta):
         """
@@ -15,7 +15,7 @@ class Module:
         :param output_delta: 模型输出的期望改变值（loss对module的输出求导）
         :return: None
         """
-        self.sequential.backward(output_delta.T)
+        self.sequential.backward(output_delta)
 
     def step(self, lr):
         """

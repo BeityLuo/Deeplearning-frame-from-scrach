@@ -4,14 +4,14 @@ import struct#处理二进制文件
 
 #将图片信息从idx3-ubyte文件中解析出来，将标签信息从idx1-ubyte文件中解析出来，其中idx3的3代表是三维，idx1的1代表是一维
 # 训练集文件
-train_images_idx3_ubyte_file = 'dataset/train-images.idx3-ubyte'
+train_images_idx3_ubyte_file = '../dataset/train-images.idx3-ubyte'
 # 训练集标签文件
-train_labels_idx1_ubyte_file = 'dataset/train-labels.idx1-ubyte'
+train_labels_idx1_ubyte_file = '../dataset/train-labels.idx1-ubyte'
 
 # 测试集文件
-test_images_idx3_ubyte_file = 'dataset/t10k-images.idx3-ubyte'
+test_images_idx3_ubyte_file = '../dataset/t10k-images.idx3-ubyte'
 # 测试集标签文件
-test_labels_idx1_ubyte_file = 'dataset/t10k-labels.idx1-ubyte'
+test_labels_idx1_ubyte_file = '../dataset/t10k-labels.idx1-ubyte'
 
 #解析idx3文件
 def decode_idx3_ubyte(idx3_ubyte_file):

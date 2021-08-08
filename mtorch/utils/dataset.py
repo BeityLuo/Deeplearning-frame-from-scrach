@@ -1,4 +1,4 @@
-import IDX_reader
+from MINST_recognition import IDX_reader
 import numpy as np
 
 

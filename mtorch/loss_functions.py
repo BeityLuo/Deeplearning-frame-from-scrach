@@ -28,9 +28,9 @@ class SquareLoss:
                                          str(predictions.shape) + ", targets.shape = " + str(targets.shape))
         temp = predictions - targets
         temp = temp * temp / 2
+        loss_value = np.sum(temp)
 
         prediction_gradient = predictions - targets  # 保存预测值的梯度，以后用来反向传播
-        loss_value = np.sum(temp)
         if self.loss is None:
             self.loss = Loss(loss_value, prediction_gradient, self.back_func)
         else:
@@ -38,7 +38,8 @@ class SquareLoss:
             self.loss.prediction_gradient = prediction_gradient
         return self.loss
 
-    def label_to_matrix(self, targets, dim):
+    @staticmethod
+    def label_to_matrix(targets, dim):
         batch_size = targets.shape[0]
         targets = targets.astype(np.int)
         targets = targets.reshape(-1).tolist()

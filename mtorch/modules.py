@@ -6,7 +6,6 @@ class Module:
         return self.forward(x)
 
     def forward(self, x):
-        # 这里要转置两次，因为外界统一用(batch_size, dim), 神经网络内部统一用(dim, batch_size)
         return self.sequential(x)
 
     def backward(self, output_delta):

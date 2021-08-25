@@ -1,4 +1,6 @@
-# 仅使用`numpy`编写的深度学习框架
+# 神经网络框架使用方法及设计思想
+
+
 
 - 在框架上基本模仿`pytorch`，用以学习神经网络的基本算法，如前向传播、反向传播、各种层、各种激活函数
 - 采用面向对象的思想进行编程，思路较为清晰
@@ -6,6 +8,8 @@
 - 代码大体框架较为清晰，但不否认存在丑陋的部分，以及对于`pytorch`的拙劣模仿
 
 ## 项目介绍
+
+- 用此框架编写了几个小项目作为验证程序，项目代码存放在同名文件夹中
 
 - ### `MINST_recognition`:
 	
@@ -15,9 +19,21 @@
 	
 - ### `RNN_sin_to_cos`:
 
-	- 使用循环神经网络RNN，用$sin$的曲线预测$cos$的曲线
+	- 使用**简单循环神经网络**`RNN`层或者**长短时记忆机**`LSTM`层，用$sin$的曲线预测$cos$的曲线
 	
-	- 目前仍有bug，无法正常训练
+	- 在定义模块的地方``RNN`和`LSTM`可以互相替换
+	
+	- ```python
+		class RNNPractice(mtorch.modules.Module):
+		    def __init__(self):
+		        super(RNNPractice, self).__init__(Sequential([
+		            LSTM(INPUT_SIZE, HIDDEN_SIZE),
+		            # RNN(INPUT_SIZE, HIDDEN_SIZE),  # 这两个可以随便换
+		            Linear3(HIDDEN_SIZE, 1),
+		        ]))
+		```
+	
+	- 
 
 ## 框架介绍
 
@@ -223,3 +239,8 @@
         # np.stack的作用是将列表转变成一个矩阵
         return np.stack(input_gradients), h_gradient
 ```
+
+- ### `LSTM`层：长短时记忆机
+
+	- 使用方法与`RNN`几乎一致，具体原理和代码将在另一篇文章中讲解
+	- 想了解代码实现的同学可以直接去Github的库里看代码

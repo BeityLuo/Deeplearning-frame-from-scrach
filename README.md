@@ -126,9 +126,9 @@
 				        out = layer(out)
 				    return out
 				
-				def backward(self, output_gradiant):
+				def backward(self, output_gradient):
 				    layer_num = len(self.layers)
-				    delta = output_gradiant
+				    delta = output_gradient
 				    for i in range(layer_num - 1, -1, -1):
 				        # 反向遍历各个层, 将期望改变量反向传播
 				        delta = self.layers[i].backward(delta)
@@ -175,21 +175,21 @@
 		- #### 反向传播
 
 			- ```python
-				def backward(self, output_gradiant):
+				def backward(self, output_gradient):
 				    """
-				    :param output_gradiant: shape == (seq, batch, out_dim)
+				    :param output_gradient: shape == (seq, batch, out_dim)
 				    :return: input_gradiant
 				    """
-				    if output_gradiant.shape != self.outputs.shape:
+				    if output_gradient.shape != self.outputs.shape:
 				        # 期望得到(seq, batch, out_dim)形状
 				        raise ShapeNotMatchException(self, "__backward: expected {}, but we got "
-				                                           "{}".format(self.outputs.shape, output_gradiant.shape))
+				                                           "{}".format(self.outputs.shape, output_gradient.shape))
 				
 				    input_gradients = []
 				    # 每个time_step上的虚拟weight_gradient, 最后求平均值就是总的weight_gradient
 				    weight_gradients = np.zeros(self.linear.weights_shape())
 				    bias_gradients = np.zeros(self.linear.bias_shape())
-				    batch_size = output_gradiant.shape[1]
+				    batch_size = output_gradient.shape[1]
 				
 				    # total_gradient: 前向传播的时候是将x, h合成为一个矩阵，所以反向传播也先计算这个大矩阵的梯度再拆分为x_grad, h_grad
 				    total_gradient = np.zeros((batch_size, self.out_dim + self.in_dim))
@@ -201,10 +201,10 @@
 				        # 所以反向传播计算顺序：h_grad -> z_grad -> x_grad, h_grad, w_grad, b_grad
 				
 				        # %%%%%%%%%%%%%%计算平均值的版本%%%%%%%%%%%%%%%%%%%%%%%
-				        # h_gradient = (output_gradiant[i] + total_gradient[:, 0:self.out_dim]) / 2
+				        # h_gradient = (output_gradient[i] + total_gradient[:, 0:self.out_dim]) / 2
 				        # %%%%%%%%%%%%%%不计算平均值的版本%%%%%%%%%%%%%%%%%%%%%%%
 				        #  计算h_grad: 这一时间点的h_grad包括输出的grad和之前的时间点计算所得grad两部分
-				        h_gradient = output_gradiant[i] + total_gradient[:, 0:self.out_dim]  
+				        h_gradient = output_gradient[i] + total_gradient[:, 0:self.out_dim]  
 				
 				        # w_grad和b_grad是在linear.backward()内计算的，不用手动再计算了
 				        z_gradient = self.activation.backward(h_gradient)  # 计算z_grad

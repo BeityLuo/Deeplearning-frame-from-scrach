@@ -25,14 +25,13 @@ class Sigmoid(Layer):
         e = np.exp(-1 * x)
         return e / (1 + e) ** 2
 
-    def backward(self, output_gradiant):
-        if output_gradiant.shape != self.outputs.shape:
+    def backward(self, output_gradient, inputs=None):
+        inputs = self.inputs if inputs is None else inputs
+        if output_gradient.shape != self.outputs.shape:
             # 期望得到(out_dim, batch_size)形状
             raise ShapeNotMatchException(self, "__backward: expected {}, but we got "
-                                               "{}".format(self.outputs.shape, output_gradiant.shape))
-        input_gradient = output_gradiant * self.__sigmoid_derivative(self.inputs)
-        pos_cnt = 0
-        neg_cnt = 0
+                                               "{}".format(self.outputs.shape, output_gradient.shape))
+        input_gradient = output_gradient * self.__sigmoid_derivative(inputs)
         return input_gradient
 
 
@@ -56,13 +55,14 @@ class Relu(Layer):
     def __relu_derivative(x):
         return np.where(x < 0, 0, 1)
 
-    def backward(self, output_gradiant):
-        if output_gradiant.shape != self.outputs.shape:
+    def backward(self, output_gradient, inputs=None):
+        inputs = self.inputs if inputs is None else inputs
+        if output_gradient.shape != self.outputs.shape:
             # 期望得到(out_dim, batch_size)形状
             raise ShapeNotMatchException(self, "__backward: expected {}, but we got "
-                                               "{}".format(self.outputs.shape, output_gradiant.shape))
+                                               "{}".format(self.outputs.shape, output_gradient.shape))
 
-        input_gradiant = output_gradiant * self.__relu_derivative(self.inputs)
+        input_gradiant = output_gradient * self.__relu_derivative(inputs)
         return input_gradiant
 
 
@@ -88,12 +88,13 @@ class Tanh(Layer):
         return 4 / (np.exp(2*x) + np.exp(-2*x) + 2)
         # return 1 - np.tanh(x) ** 2
 
-    def backward(self, output_gradiant):
-        if output_gradiant.shape != self.outputs.shape:
+    def backward(self, output_gradient, inputs=None):
+        if output_gradient.shape != self.outputs.shape:
             # 期望得到(out_dim, batch_size)形状
             raise ShapeNotMatchException(self, "__backward: expected {}, but we got "
-                                               "{}".format(self.outputs.shape, output_gradiant.shape))
+                                               "{}".format(self.outputs.shape, output_gradient.shape))
+        inputs = self.inputs if inputs is None else inputs
         # tanh'(x) = sech(x)**2 = 1 - tanh(x)**2
-        # input_gradiant = output_gradiant * (1 - self.outputs**2)
-        input_gradiant = output_gradiant * (1 - self.outputs ** 2)
+        # input_gradiant = output_gradient * (1 - self.outputs**2)
+        input_gradiant = output_gradient * self.__tanh_derivative(inputs)
         return input_gradiant

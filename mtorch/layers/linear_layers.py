@@ -28,7 +28,7 @@ class Linear(Layer):
         self.inputs = x
         return self.outputs
 
-    def backward(self, output_gradiant):
+    def backward(self, output_gradient, inputs=None):
         pass
 
     def weights_shape(self):
@@ -90,13 +90,14 @@ class Linear2(Linear):
     def __init__(self, in_dim, out_dim, coe=1):
         super(Linear2, self).__init__(in_dim, out_dim, coe)
 
-    def backward(self, output_gradiant):
-        batch_size = output_gradiant.shape[0]
-        weights_gradient = np.dot(self.inputs.T, output_gradiant) / batch_size
-        bias_gradient = np.sum(output_gradiant, 0) / batch_size
+    def backward(self, output_gradient, inputs=None):
+        inputs = inputs if inputs is not None else self.inputs
+        batch_size = output_gradient.shape[0]
+        weights_gradient = np.dot(inputs.T, output_gradient) / batch_size
+        bias_gradient = np.sum(output_gradient, 0) / batch_size
         self.gradients["w"] = weights_gradient
         self.gradients["b"] = bias_gradient
-        input_gradient = np.matmul(output_gradiant, self.weights.T) / self.out_dim
+        input_gradient = np.matmul(output_gradient, self.weights.T) / self.out_dim
         return input_gradient
 
 
@@ -108,24 +109,25 @@ class Linear3(Linear):
     def __init__(self, in_dim, out_dim, coe=1):
         super(Linear3, self).__init__(in_dim, out_dim, coe)
 
-    def backward(self, output_gradiant):
-        batch_size = output_gradiant.shape[1]
-        seq_len = output_gradiant.shape[0]
-        weights_gradient = np.matmul(self.transpose(self.inputs), output_gradiant) / batch_size
+    def backward(self, output_gradient, inputs=None):
+        inputs = inputs if inputs is not None else self.inputs
+        batch_size = output_gradient.shape[1]
+        seq_len = output_gradient.shape[0]
+        weights_gradient = np.matmul(self.transpose(inputs), output_gradient) / batch_size
         weights_gradient = np.sum(weights_gradient, axis=0) / seq_len
-        bias_gradient = np.sum(output_gradiant, axis=(0, 1)) / batch_size / seq_len
+        bias_gradient = np.sum(output_gradient, axis=(0, 1)) / batch_size / seq_len
 
         self.gradients["w"] = weights_gradient
         self.gradients["b"] = bias_gradient
         # print("sum(Linear3.w_gradient) = {}".format(np.sum(np.abs(self.gradients["w"]))))
-        input_gradient = np.matmul(output_gradiant, self.weights.T) / self.out_dim
+        input_gradient = np.matmul(output_gradient, self.weights.T) / self.out_dim
         return input_gradient
 
 
 class Perceptron(Layer):
     activation_dict = {"sigmoid": Sigmoid, "relu": Relu, "tanh": Tanh}
 
-    def __init__(self, in_dim, out_dim, matrix_len=2, activation="sigmoid"):
+    def __init__(self, in_dim, out_dim, activation, matrix_len=2):
         """
         :param in_dim: input dimension
         :param out_dim: output dimension
@@ -148,5 +150,37 @@ class Perceptron(Layer):
     def forward(self, inputs):
         return self.activation(self.linear(inputs))
 
-    def backward(self, output_gradiant):
-        return self.linear(self.activation(output_gradiant))
+    def backward(self, output_gradient, inputs=None):
+        inputs = inputs if inputs is not None else self.inputs
+        return self.linear.backward(self.activation.backward(output_gradient, self.linear(inputs)), inputs)
+
+    def step(self, lr):
+        self.linear.step(lr)
+        self.activation.step(lr)
+
+    def weights(self):
+        return self.linear.weights
+
+    def bias(self):
+        return self.linear.bias
+
+    def set_weights(self, weights=None, bias=None):
+        if weights is not None:
+            self.linear.weights = weights
+        if bias is not None:
+            self.linear.bias = bias
+
+    def set_gradients(self, w=None, b=None):
+        """
+        设置梯度
+        :param w:
+        :param b:
+        :return:
+        """
+        self.linear.set_gradients(w, b)
+
+    def w_gradient(self):
+        return self.linear.gradients["w"]
+
+    def b_gradient(self):
+        return self.linear.gradients["b"]

@@ -8,15 +8,15 @@ class Layer:
         self.outputs = None
         self.inputs = None
 
-    def __call__(self, x):
-        return self.forward(x)
+    def __call__(self, inputs):
+        return self.forward(inputs)
 
-    def forward(self, *tuples, **dicts):
+    def forward(self, inputs):
         pass
 
-    def backward(self, output_gradiant):
+    def backward(self, output_gradient, inputs=None):
         """反向传播，记录自身的权重的改变，输出对输入的期望变化值(梯度)
-        :param output_gradiant: 输出的期望变化值(梯度)
+        :param output_gradient: 输出的期望变化值(梯度)
         :return: 输入的期望变化值
         """
         pass
@@ -46,15 +46,15 @@ class Sequential(Layer):
 
         self.check_dim_sequence()
 
-    def forward(self, x):
-        out = x
+    def forward(self, inputs):
+        out = inputs
         for layer in self.layers:
             out = layer(out)
         return out
 
-    def backward(self, output_gradiant):
+    def backward(self, output_gradient, inputs=None):
         layer_num = len(self.layers)
-        delta = output_gradiant
+        delta = output_gradient
         for i in range(layer_num - 1, -1, -1):
             # 反向遍历各个层, 将期望改变量反向传播
             delta = self.layers[i].backward(delta)

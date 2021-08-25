@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 # Hyper parameters
 from mtorch.layers.layer import Sequential
 from mtorch.layers.linear_layers import Linear3
-from mtorch.layers.recurrent_layers import RNN
+from mtorch.layers.recurrent_layers import RNN, LSTM
 
 INPUT_SIZE = 1
 EPOCH_NUM = 100000  # 共训练EPOCH_NUM次 train for EPOCH_NUM times
@@ -19,13 +19,13 @@ SHOW_CHART_STEP = 50  # 每测试SHOW_CHART_STEP次就输出一次图像 draw a 
 learning_rate = 0.1  # 学习率
 TIME_STEP = 10  # 时间序列长度
 HIDDEN_SIZE = 32
-batch_size = 8
+batch_size = 32
 
 # 定义网络
 class RNNPractice(mtorch.modules.Module):
     def __init__(self):
         super(RNNPractice, self).__init__(Sequential([
-            RNN(INPUT_SIZE, HIDDEN_SIZE),
+            LSTM(INPUT_SIZE, HIDDEN_SIZE),
             Linear3(HIDDEN_SIZE, 1),
         ]))
 
@@ -43,7 +43,7 @@ class RNNPractice(mtorch.modules.Module):
 
 rnn = RNNPractice()
 loss_func = loss_functions.SquareLoss(rnn.backward)
-optimizer = optimizers.SGD(rnn, learning_rate, lr_decay=True)
+optimizer = optimizers.SGD(rnn, learning_rate, lr_decay=False)
 
 drawer = chart_drawer.ChartDrawer()
 
@@ -70,12 +70,11 @@ epochs = []
 
 zero_state = np.zeros((batch_size, HIDDEN_SIZE))  # the shape of one time step of RNN's output is (batch_size, HIDDEN_SIZE)
 # h_state = np.random.randn(batch_size, HIDDEN_SIZE)
-h_state = None
+h_state = zero_state
 
 for i in range(1, EPOCH_NUM + 1):
     inputs, targets = getSample(i)
-    outputs, h_state = rnn((zero_state, inputs))
-    outputs, h_state = rnn((h_state, inputs))
+    outputs, h_state = rnn((inputs, None))
     loss = loss_func(outputs, targets)
     loss.backward()
     optimizer.step()

@@ -41,7 +41,7 @@ class SquareLoss:
     @staticmethod
     def label_to_matrix(targets, dim):
         batch_size = targets.shape[0]
-        targets = targets.astype(np.int)
+        targets = targets.astype(np.int32)
         targets = targets.reshape(-1).tolist()
         targets = np.eye(dim)[targets]
         targets = np.reshape(targets, (batch_size, dim))

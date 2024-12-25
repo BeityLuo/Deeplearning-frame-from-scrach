@@ -1,12 +1,16 @@
+import sys
+sys.path.append(".") 
 from chart_drawer import ChartDrawer
 from mtorch import layers
-from mtorch.layers import Sequential
+from mtorch.layers.layer import Sequential
 from mtorch.loss_functions import SquareLoss
 from mtorch.modules import Module
 from mtorch.optimizers import SGD
 from mtorch.utils.dataloader import DataLoader
 from mtorch.utils.dataset import FileDataset
 from macros import *
+from mtorch.layers.linear_layers import Linear2
+from mtorch.layers.non_linear_activations import Relu, Sigmoid
 
 EPOCH_NUM = 4000  # 共训练EPOCH_NUM次 train for EPOCH_NUM times
 TEST_STEP = 50  # 每训练TEST_STEP轮就测试一次 test for every TEST_STEP times train
@@ -46,7 +50,6 @@ def show_effect(epoch, module, loss_fun, test_loader, step):
     drawer.accuracies[step] = accuracy
     print("test loss = {}".format(total_loss))
     print("test accuracy = {}%".format(accuracy * 100))
-    show_image(test_img)
     if step % SHOW_CHART_STEP == 0:
         drawer.draw()
 
@@ -70,7 +73,7 @@ def show_image(img):
 
 
 # 准备数据集 prepare dataset
-dataset_path = "../dataset"
+dataset_path = "./dataset"
 train_img_path = dataset_path + "/" + TRAIN_IMG
 train_label_path = dataset_path + "/" + TRAIN_LABEL
 train_set = FileDataset(train_img_path, train_label_path)
@@ -89,12 +92,12 @@ print("Finished loader dataset")
 class DigitModule(Module):
     def __init__(self):
         sequential = Sequential([
-            layers.Linear2(in_dim=ROW_NUM * COLUM_NUM, out_dim=16, coe=2),
-            layers.Relu(16),
-            layers.Linear2(in_dim=16, out_dim=16, coe=2),
-            layers.Relu(16),
-            layers.Linear2(in_dim=16, out_dim=CLASS_NUM, coe=1),
-            layers.Sigmoid(CLASS_NUM)
+            Linear2(in_dim=ROW_NUM * COLUM_NUM, out_dim=16, coe=2),
+            Relu(16),
+            Linear2(in_dim=16, out_dim=16, coe=2),
+            Relu(16),
+            Linear2(in_dim=16, out_dim=CLASS_NUM, coe=1),
+            Sigmoid(CLASS_NUM)
 
             # layers.Linear(in_dim=ROW_NUM * COLUM_NUM, out_dim=100),
             # layers.Sigmoid(100),
@@ -124,5 +127,7 @@ for i in range(EPOCH_NUM):
         loss.backward()  # 通过反向传播计算梯度 calculate gradiant through back propagation
         optimizer.step()  # 通过优化器调整模型参数 adjust the weights of network through optimizer
     if i % TEST_STEP == 0:
+        test_img = imgs[0].reshape((28, 28))
+        show_image(test_img)
         show_effect(i, module, loss_func, test_loader, i // TEST_STEP)
         print("{} turn finished, loss of train set = {}".format(i, trainning_loss))

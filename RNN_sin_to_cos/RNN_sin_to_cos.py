@@ -1,11 +1,14 @@
 # 定义网络
-import numpy as np
 
+import numpy as np
+import sys
+sys.path.append(".") 
+import matplotlib.pyplot as plt
 import chart_drawer
 import mtorch.modules
 from mtorch import loss_functions, optimizers
 
-import matplotlib.pyplot as plt
+
 
 # Hyper parameters
 from mtorch.layers.layer import Sequential
@@ -13,9 +16,9 @@ from mtorch.layers.linear_layers import Linear3
 from mtorch.layers.recurrent_layers import RNN, LSTM
 
 INPUT_SIZE = 1
-EPOCH_NUM = 100000  # 共训练EPOCH_NUM次 train for EPOCH_NUM times
+EPOCH_NUM = 2000  # 共训练EPOCH_NUM次 train for EPOCH_NUM times
 TEST_STEP = 100  # 每训练TEST_STEP轮就测试一次 test for every TEST_STEP times train
-SHOW_CHART_STEP = 50  # 每测试SHOW_CHART_STEP次就输出一次图像 draw a chart for every SHOW_CHART_STEP times test
+SHOW_CHART_STEP = 5  # 每测试SHOW_CHART_STEP次就输出一次图像 draw a chart for every SHOW_CHART_STEP times test
 learning_rate = 0.1  # 学习率
 TIME_STEP = 10  # 时间序列长度
 HIDDEN_SIZE = 32
@@ -88,7 +91,7 @@ for i in range(1, EPOCH_NUM + 1):
             start = (i * batch_size) * 13 / 11 * np.pi
             end = (i * batch_size + 1) * 13 / 11 * np.pi
             axis = np.linspace(start, end, TIME_STEP)
-            # drawer.draw_2lines(axis, np.ndarray.flatten(targets[:,0]), np.ndarray.flatten(outputs[:,0]))
+            drawer.draw_2lines(axis, np.ndarray.flatten(targets[:,0]), np.ndarray.flatten(outputs[:,0]))
             plt.plot(axis, targets[:,0], 'b-')
             plt.plot(axis, inputs[:, 0], 'g-')
             plt.plot(axis, np.ndarray.flatten(outputs[:,0]), 'r-')
